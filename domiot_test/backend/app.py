@@ -28,6 +28,10 @@ app.config.from_prefixed_env()
 
 @app.route("/")
 def hello_world():
+    if not app.config["core_addon_hostname"] or app.config["core_addon_hostname"] == "":
+        return render_template("missconfig.html")
+
+
     username = request.headers.get("X-Remote-User-Name")
     context = {
         "username": username,
