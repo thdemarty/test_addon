@@ -1,17 +1,14 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
+WORKDIR /app
+
 # Install requirements for add-on
-RUN \
-  apk add --no-cache \
-    python3
+RUN apk update && apk add --no-cache python3 py3-pip build-base python3-dev
 
-# Python 3 HTTP Server serves the current working dir
-# So let's set it to our add-on persistent data directory.
-WORKDIR /data
+COPY . /app/
 
-# Copy data for add-on
-COPY run.sh /
-RUN chmod a+x /run.sh
+RUN bash build.sh
 
-CMD [ "/run.sh" ]
+RUN chmod +x run.sh
+CMD [ "./run.sh" ]

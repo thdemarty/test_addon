@@ -11,6 +11,9 @@ arch:
   - armv7
   - i386
 startup: services
+ingress: true
+panel_title: "Test Add-on"
+
 options:
   core_addon_hostname: ""
 schema:
