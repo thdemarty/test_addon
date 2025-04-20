@@ -1,8 +1,8 @@
 ---
-name: "Example Add-on"
-description: "My first real add-on!"
+name: "Test Add-on"
+description: "Testing purpose add-on"
 version: "0.0.1"
-slug: "example_addon"
+slug: "domiot_test"
 init: false
 arch:
   - aarch64
@@ -11,8 +11,6 @@ arch:
   - armv7
   - i386
 startup: services
-ports:
-  8000/tcp: 8000
 options:
   core_addon_hostname: ""
 schema:
