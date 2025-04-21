@@ -13,6 +13,7 @@ arch:
 startup: services
 ingress: true
 panel_title: "Test Add-on"
+panel_admin: false
 
 options:
   core_addon_hostname: ""
