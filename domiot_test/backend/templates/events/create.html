@@ -1,5 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- Modal pour créer une catégorie -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryModalLabel">Créer une catégorie</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Nom de la catégorie</label>
+                        <input type="text" class="form-control" id="categoryName" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container p-5">
     <h1 class="mb-4">Créer un événement</h1>
 
@@ -18,7 +39,7 @@
                 {% endfor %}
             </select>
         </div>
-        
+
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
@@ -41,6 +62,7 @@
             <label class="form-check-label" for="all_day">Toute la journée</label>
         </div>
 
+        {% if categories %}
         <div class="mb-3">
             <label for="categories" class="form-label">Catégories</label>
             <select multiple class="form-select" id="categories" name="categories">
@@ -49,7 +71,22 @@
                 {% endfor %}
             </select>
             <div class="form-text">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs catégories.</div>
+            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="openCategoryModal()">Créer une
+                catégorie</button>
         </div>
+        {% else %}
+        <div class="card mb-3" id="empty_cat_card">
+            <div class="card-body">
+                <div class="text-muted small text-center">
+                    <div class="mb-3">
+                        Vous n'avez pas de catégories disponibles.
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="openCategoryModal()" id="nope">Créer une catégorie
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
 
         <button type="submit" class="btn btn-primary">Créer l'événement</button>
         <a href="{{ url_for('patient_index') }}" class="btn btn-secondary ms-2">Annuler</a>
@@ -92,5 +129,65 @@
             }
         }
     }
+</script>
+<script>
+    function openCategoryModal() {
+        const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+        modal.show();
+    }
+
+    document.getElementById('categoryForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const categoryName = document.getElementById('categoryName').value;
+
+        fetch('/categories/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ name: categoryName }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Vérifier si l'élément <select> existe
+                let select = document.getElementById('categories');
+                if (!select) {
+                    // Si le <select> n'existe pas, le créer dynamiquement
+                    const container = document.createElement('div');
+                    container.className = 'mb-3';
+                    container.innerHTML = `
+                        <label for="categories" class="form-label">Catégories</label>
+                        <select multiple class="form-select" id="categories" name="categories"></select>
+                        <div class="form-text">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs catégories.</div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="openCategoryModal()">Créer une catégorie</button>
+                    `;
+                    //  le conteneur à la place de empty_cat_card
+                    const emptyCatCard = document.getElementById('empty_cat_card');
+                    emptyCatCard.parentNode.replaceChild(container, emptyCatCard);
+                    select = document.getElementById('categories');
+                }
+
+                // Ajouter la nouvelle catégorie au <select>
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                option.selected = true;
+                select.appendChild(option);
+
+
+                // Fermer le modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('categoryModal'));
+                modal.hide();
+            })
+            .catch(error => {
+                alert('Erreur : ' + error.message);
+            });
+    });
 </script>
 {% endblock %}

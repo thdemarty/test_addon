@@ -74,6 +74,21 @@ def add_event():
     categories = Category.query.order_by(Category.name).all()
     return render_template('events/create.html', categories=categories, statuses=Status, colors=Color)
 
+@app.route('/categories/create', methods=['POST'])
+def create_category():
+    name = request.form.get('name')
+    if not name:
+        return "Category name is required", 400
+    
+    existing_category = Category.query.filter_by(name=name).first()
+    if existing_category:
+        return "Category already exists", 400
+    
+    category = Category(name=name)
+    db.session.add(category)
+    db.session.commit()
+
+    return {"id": category.id, "name": category.name}, 201
 
 if __name__ == '__main__':
     app.run(debug=True)
