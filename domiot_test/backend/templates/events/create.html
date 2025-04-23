@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container p-5">
+    <form method="post">
+        <h1 class="mb-4">Créer un événement</h1>
+
+        <form method="post" class="card p-4 shadow-sm bg-white rounded">
+            <div class="mb-3">
+                <label for="title" class="form-label">Titre</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="start_dt" class="form-label">Date de début</label>
+                    <input type="datetime-local" class="form-control" id="start_dt" name="start_dt" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="end_dt" class="form-label">Date de fin</label>
+                    <input type="datetime-local" class="form-control" id="end_dt" name="end_dt">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="categories" class="form-label">Catégories</label>
+                <select multiple class="form-select" id="categories" name="categories">
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs catégories.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Créer l'événement</button>
+            <a href="{{ url_for('patient_index') }}" class="btn btn-secondary ms-2">Annuler</a>
+        </form>
+</div>
+{% endblock %}
