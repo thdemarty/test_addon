@@ -22,14 +22,17 @@
 		<div class="row min-vh-100 p-3">
 			<div class="col d-flex flex-column">
 				<div class="card flex-grow-1">
-					<div class="card-header"><h5 class="mb-0">Calendrier</h5></div>
+					<div class="card-header">
+						<h5 class="mb-0">Calendrier</h5>
+					</div>
 					<div class="card-body">
-						
+						<!-- All day events (with a carousel)-->
 						<div class="h5 text-center mb-5">
-							Aujourd'hui, c'est l'anniversaire de <strong>Maryvonne Albert</strong> (76 ans) 🎉 
+							Aujourd'hui, c'est l'anniversaire de <strong>Maryvonne Albert</strong> (76 ans) 🎉
 						</div>
-						
 
+						{% if events %}
+						{% for event in events %}
 						<div class="card bg-info-subtle mb-3">
 							<div class="card-body">
 								<div class="row">
@@ -37,7 +40,7 @@
 										<div class="h3 fw-bold">
 											10:00
 										</div>
-									
+
 									</div>
 									<div class="col text-end">
 										<div class="h3 fw-bold">
@@ -48,51 +51,18 @@
 								Allumer le chauffage des chambres
 							</div>
 						</div>
-
-						<div class="card bg-warning-subtle mb-3">
-							<div class="card-body">
-								<div class="row">
-									<div class="col">
-										<div class="h3 fw-bold">
-											12:15
-										</div>
-									
-									</div>
-									<div class="col text-end">
-										<div class="h3 fw-bold">
-											Médicaments
-										</div>
-									</div>
-								</div>
-								Prendre Femmanose
+						{% endfor %}
+						{% else %}
+						<div class="h5 text-center mb-5 text-muted fw-normal">
+							
+							<!-- Include svg -->
+							<div class="my-3">
+								<img class="img-fluid" src="static/undraw_happy-music_na4p.svg" width="50%">
+								<br>
 							</div>
+							Aucun événement pour aujourd'hui
 						</div>
-
-						<div class="card bg-success-subtle mb-3">
-							<div class="card-body">
-								<div class="row">
-									<div class="col">
-										<div class="h3 fw-bold">
-											13:30
-										</div>
-									
-									</div>
-									<div class="col text-end">
-										<div class="h3 fw-bold">
-											Ménage
-										</div>
-									</div>
-								</div>
-								Marie vient faire le ménage jusqu'à 15h
-							</div>
-						</div>
-
-
-
-
-
-
-
+						{% endif %}
 					</div>
 				</div>
 			</div>
@@ -110,4 +80,5 @@
 		integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
 		crossorigin="anonymous"></script>
 </body>
+
 </html>
