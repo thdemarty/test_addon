@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_migrate import Migrate
 from config import Config
-from models import db, Event, Category, Status
+from models import db, Event, Category, Status, Color
 import datetime
 
 app = Flask(__name__)
@@ -13,8 +13,21 @@ migrate = Migrate(app, db)
 
 @app.route('/patient')
 def patient_index():
-    events = Event.query.order_by(Event.start_dt).all()
-    return render_template('index.html', events=events)
+    # display events today + not all_day events
+    today = datetime.datetime.now()
+    start = datetime.datetime.combine(today, datetime.datetime.min.time())
+    end = datetime.datetime.combine(today, datetime.datetime.max.time())
+    events = Event.query.filter(
+        Event.start_dt >= start,
+        Event.start_dt <= end,
+        Event.all_day == False
+    ).order_by(Event.start_dt).all()
+
+    context = {
+        'events': events,
+        'all_day_events': Event.query.filter(Event.all_day == True).all()
+    }
+    return render_template('index.html', **context)
 
 @app.route('/')
 def index():
@@ -26,15 +39,26 @@ def add_event():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form.get('description')
-        start_dt = datetime.datetime.fromisoformat(request.form['start_dt'])
-        end_dt = datetime.datetime.fromisoformat(request.form['end_dt'])
+        all_day = request.form.get('all_day')
+        
+        # color is the value of a Color choice in the enum
+        # 
+
+        if all_day:
+            start = datetime.datetime.fromisoformat(request.form['start_dt'])
+            end_dt = start + datetime.timedelta(days=1)
+        else:
+            start = datetime.datetime.fromisoformat(request.form['start_dt'])
+            end_dt = datetime.datetime.fromisoformat(request.form['end_dt'])
 
         event = Event(
             title=title,
             status=Status.PENDING,
             description=description,
-            start_dt=start_dt,
-            end_dt=end_dt
+            all_day=all_day is not None,
+            start_dt=start,
+            end_dt=end_dt,
+            color=Color(request.form['color']),
         )
 
         selected_category_ids = request.form.getlist('categories')
@@ -48,7 +72,7 @@ def add_event():
         return redirect(url_for('patient_index'))
 
     categories = Category.query.order_by(Category.name).all()
-    return render_template('events/create.html', categories=categories, statuses=Status)
+    return render_template('events/create.html', categories=categories, statuses=Status, colors=Color)
 
 
 if __name__ == '__main__':

@@ -11,6 +11,16 @@ class Status(enum.Enum):
     PENDING = "pending"
     MISSED = "missed"
 
+class Color(enum.Enum):
+    PRIMARY = "primary"
+    SECONDARY = "secondary"
+    SUCCESS = "success"
+    WARNING = "warning"
+    DANGER = "danger"
+    INFO = "info"
+    DARK = "dark"
+    LIGHT = "light"
+
 event_category = Table(
     'event_category',
     db.Model.metadata,
@@ -22,8 +32,10 @@ event_category = Table(
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(128), nullable=False)
+    color = db.Column(Enum(Color), default=Color.PRIMARY, nullable=False)
     status = db.Column(Enum(Status), default=Status.PENDING, nullable=False)
     description = db.Column(db.Text, nullable=True)
+    all_day = db.Column(db.Boolean, default=False, nullable=False)
     start_dt = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     end_dt = db.Column(db.DateTime, nullable=True)
 

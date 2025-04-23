@@ -18,14 +18,37 @@
 				<h5 class="mb-0">Calendrier</h5>
 			</div>
 			<div class="card-body">
-				<!-- All day events (with a carousel)-->
-				<div class="h5 text-center mb-5">
-					Aujourd'hui, c'est l'anniversaire de <strong>Maryvonne Albert</strong> (76 ans) 🎉
+				<!-- All day events carousel -->
+				{% if all_day_events %}
+				<div id="allDayEventsCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="5000">
+					<div class="carousel-inner">
+						{% for event in all_day_events %}
+						<div class="carousel-item {% if loop.first %}active{% endif %}">
+							<div class="h5 text-center">
+								<strong>{{ event.title }}</strong>
+							</div>
+						</div>
+						{% endfor %}
+					</div>
+					<button class="carousel-control-prev" type="button" data-bs-target="#allDayEventsCarousel" data-bs-slide="prev">
+						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+						<span class="visually-hidden">Précédent</span>
+					</button>
+					<button class="carousel-control-next" type="button" data-bs-target="#allDayEventsCarousel" data-bs-slide="next">
+						<span class="carousel-control-next-icon" aria-hidden="true"></span>
+						<span class="visually-hidden">Suivant</span>
+					</button>
 				</div>
+				{% else %}
+				<div class="h5 text-center mb-5 text-muted fw-normal">
+					Aucun événement pour aujourd'hui
+				</div>
+				{% endif %}
 
+				<!-- Other events -->
 				{% if events %}
 				{% for event in events %}
-				<div class="card bg-info-subtle mb-3">
+				<div class="card bg-{{ event.color.value }}-subtle mb-3">
 					<div class="card-body">
 						<div class="row">
 							<div class="col">
@@ -41,7 +64,7 @@
 								</div>
 							</div>
 						</div>
-						{{ event.title }}
+						{{ event.description }}
 					</div>
 				</div>
 				{% endfor %}

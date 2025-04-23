@@ -1,43 +1,96 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container p-5">
-    <form method="post">
-        <h1 class="mb-4">Créer un événement</h1>
+    <h1 class="mb-4">Créer un événement</h1>
 
-        <form method="post" class="card p-4 shadow-sm bg-white rounded">
-            <div class="mb-3">
-                <label for="title" class="form-label">Titre</label>
-                <input type="text" class="form-control" id="title" name="title" required>
+    <form method="post" class="">
+        <div class="mb-3">
+            <label for="title" class="form-label">Titre</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+
+        <!-- Pick a color among colors -->
+        <div class="mb-3">
+            <label for="color" class="form-label">Couleur</label>
+            <select class="form-select" id="color" name="color">
+                {% for color in colors %}
+                <option value="{{ color.value }}">{{ color.value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="start_dt" class="form-label">Date de début</label>
+                <input type="datetime-local" class="form-control" id="start_dt" name="start_dt" required>
             </div>
-
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            <div class="col-md-6" id="end_dt_div">
+                <label for="end_dt" class="form-label">Date de fin</label>
+                <input type="datetime-local" class="form-control" id="end_dt" name="end_dt">
             </div>
+        </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="start_dt" class="form-label">Date de début</label>
-                    <input type="datetime-local" class="form-control" id="start_dt" name="start_dt" required>
-                </div>
-                <div class="col-md-6">
+        <!-- All day -->
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="all_day" name="all_day" onchange="toggleAllDay(this)">
+            <label class="form-check-label" for="all_day">Toute la journée</label>
+        </div>
+
+        <div class="mb-3">
+            <label for="categories" class="form-label">Catégories</label>
+            <select multiple class="form-select" id="categories" name="categories">
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs catégories.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Créer l'événement</button>
+        <a href="{{ url_for('patient_index') }}" class="btn btn-secondary ms-2">Annuler</a>
+    </form>
+</div>
+
+<script>
+    // Fonction pour basculer entre datetime-local et date
+    function toggleAllDay(checkbox) {
+        const startInput = document.getElementById('start_dt');
+        const endInput = document.getElementById('end_dt_div');
+
+        if (checkbox.checked) {
+            // Change input types to "date"
+            startInput.type = 'date';
+            // Remove end_dt if it exists
+            if (endInput) {
+                endInput.parentNode.removeChild(endInput);
+            }
+        } else {
+            // Revert input types to "datetime-local"
+            startInput.type = 'datetime-local';
+            // Create end_dt_div if it doesn't exist
+            if (!document.getElementById('end_dt_div')) {
+                const endDiv = document.createElement('div');
+                endDiv.className = 'col-md-6';
+                endDiv.id = 'end_dt_div';
+                endDiv.innerHTML = `
                     <label for="end_dt" class="form-label">Date de fin</label>
                     <input type="datetime-local" class="form-control" id="end_dt" name="end_dt">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="categories" class="form-label">Catégories</label>
-                <select multiple class="form-select" id="categories" name="categories">
-                    {% for category in categories %}
-                    <option value="{{ category.id }}">{{ category.name }}</option>
-                    {% endfor %}
-                </select>
-                <div class="form-text">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs catégories.</div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Créer l'événement</button>
-            <a href="{{ url_for('patient_index') }}" class="btn btn-secondary ms-2">Annuler</a>
-        </form>
-</div>
+                `;
+                startInput.parentNode.parentNode.appendChild(endDiv);
+            }
+            // Set end_dt to the same value as start_dt
+            const startValue = startInput.value;
+            if (startValue) {
+                const startDate = new Date(startValue);
+                const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Ajoute 1 heure
+                document.getElementById('end_dt').value = endDate.toISOString().slice(0, 16);
+            }
+        }
+    }
+</script>
 {% endblock %}

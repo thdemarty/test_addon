@@ -1,8 +1,8 @@
-"""Initial migration
+"""initial migration
 
-Revision ID: 7c507fd63a5a
+Revision ID: dee36ae51265
 Revises: 
-Create Date: 2025-04-23 16:00:17.796847
+Create Date: 2025-04-23 16:25:30.282112
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7c507fd63a5a'
+revision = 'dee36ae51265'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,6 +27,7 @@ def upgrade():
     op.create_table('event',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=128), nullable=False),
+    sa.Column('color', sa.Enum('PRIMARY', 'SECONDARY', 'SUCCESS', 'WARNING', 'DANGER', 'INFO', 'DARK', 'LIGHT', name='color'), nullable=False),
     sa.Column('status', sa.Enum('DONE', 'PENDING', 'MISSED', name='status'), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('start_dt', sa.DateTime(), nullable=False),
