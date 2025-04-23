@@ -6,6 +6,12 @@ from sqlalchemy.orm import relationship
 
 db: SQLAlchemy = SQLAlchemy()
 
+class Role(enum.Enum):
+    PATIENT = "patient"
+    HEALTHCARE_STAFF = "healthcare_staff"
+    TECHNICIAN = "technician"
+    ZERO = "zero"
+
 class Status(enum.Enum):
     DONE = "done"
     PENDING = "pending"

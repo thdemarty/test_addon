@@ -20,7 +20,7 @@ def get_user_role(username=""):
             return data["domiot_role"]
     else:
         # Simulate a response for testing purposes
-        return "patient"
+        return "healthcare_staff"
 
 
             

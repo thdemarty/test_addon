@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_migrate import Migrate
 from config import Config
-from models import db, Event, Category, Status, Color
+from models import db, Event, Category, Status, Color, Role
+from utils import get_user_role
+from decorators import roles_required
 import datetime
 
 app = Flask(__name__)
@@ -12,6 +14,7 @@ migrate = Migrate(app, db)
 
 
 @app.route('/patient')
+@roles_required(["patient"], redirect_to='index')
 def patient_index():
     # display events today + not all_day events
     today = datetime.datetime.now()
@@ -31,8 +34,35 @@ def patient_index():
 
 @app.route('/')
 def index():
-    return redirect(url_for('patient_index'))
+    if app.debug:
+        username = app.config.get('USERNAME', 'default')
+        role = app.config.get('ROLE', 'healthcare_staff')
+    else:
+        username = request.headers.get('X-Remote-User-Name')
+        role = get_user_role(username)
 
+    print('Role:', role)
+    print('Username:', username)
+    
+    if not app.debug and 'CORE_ADDON_HOSTNAME' and app.config['CORE_ADDON_HOSTNAME'] == "" not in app.config :        
+        return redirect(url_for('missconfig'))
+
+    if role == 'patient':
+        return redirect(url_for('patient_index'))
+
+    elif role == 'healthcare_staff':
+        return "Healthcare staff not created", 404
+    
+    elif role == 'technician':
+        return "You don't have access to the data", 200
+    
+    else:
+        return "No role found", 500
+    
+
+@app.route('/missconfig')
+def missconfig():
+    return render_template('missconfig.html')
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_event():
