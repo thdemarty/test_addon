@@ -1,22 +1,37 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 from flask_migrate import Migrate
 from config import Config
 from models import db, Event, Category, Status, Color, Role
-from utils import get_user_role
+from utils import get_user_role, redirect, url_for
 from decorators import roles_required
 import datetime
+import logging
 
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.DEBUG)
+
 app.config.from_object(Config)
 
 db.init_app(app)
 migrate = Migrate(app, db)
 
 
+
+@app.route('/healthcare_staff')
+@roles_required(["healthcare_staff"], redirect_to='index')
+def healthcare_staff_index():
+    events = Event.query.all()
+
+    context = {
+        'events': events,
+    }
+
+    return render_template('healthcare_index.html', **context)
+
 @app.route('/patient')
 @roles_required(["patient"], redirect_to='index')
 def patient_index():
-    # display events today + not all_day events
     today = datetime.datetime.now()
     start = datetime.datetime.combine(today, datetime.datetime.min.time())
     end = datetime.datetime.combine(today, datetime.datetime.max.time())
@@ -34,28 +49,22 @@ def patient_index():
 
 @app.route('/')
 def index():
-    if app.debug:
-        username = app.config.get('USERNAME', 'default')
-        role = app.config.get('ROLE', 'healthcare_staff')
-    else:
-        username = request.headers.get('X-Remote-User-Name')
-        role = get_user_role(username)
+    ingress_path = request.headers.get('X-Ingress-Path', '')
 
-    print('Role:', role)
-    print('Username:', username)
-    
-    if not app.debug and 'CORE_ADDON_HOSTNAME' and app.config['CORE_ADDON_HOSTNAME'] == "" not in app.config :        
-        return redirect(url_for('missconfig'))
+    username = request.headers.get('X-Remote-User-Name')
+    role = get_user_role(username)
+
+    logging.debug(f"Username: {username}, Role: {role}")
+
+    if not app.debug and 'CORE_ADDON_HOSTNAME' and app.config['CORE_ADDON_HOSTNAME'] == "" not in app.config:
+        return redirect('missconfig')
 
     if role == 'patient':
-        return redirect(url_for('patient_index'))
-
+        return redirect("/patient")
     elif role == 'healthcare_staff':
-        return "Healthcare staff not created", 404
-    
+        return redirect("/healthcare_staff")
     elif role == 'technician':
         return "You don't have access to the data", 200
-    
     else:
         return "No role found", 500
     
@@ -65,14 +74,12 @@ def missconfig():
     return render_template('missconfig.html')
 
 @app.route('/add', methods=['GET', 'POST'])
+@roles_required(["healthcare_staff"], redirect_to='index')
 def add_event():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form.get('description')
         all_day = request.form.get('all_day')
-        
-        # color is the value of a Color choice in the enum
-        # 
 
         if all_day:
             start = datetime.datetime.fromisoformat(request.form['start_dt'])
@@ -99,21 +106,23 @@ def add_event():
 
         db.session.add(event)
         db.session.commit()
-        return redirect(url_for('patient_index'))
+
+        return redirect("patient")
 
     categories = Category.query.order_by(Category.name).all()
     return render_template('events/create.html', categories=categories, statuses=Status, colors=Color)
 
 @app.route('/categories/create', methods=['POST'])
+@roles_required(["healthcare_staff"], redirect_to='index')
 def create_category():
     name = request.form.get('name')
     if not name:
         return "Category name is required", 400
-    
+
     existing_category = Category.query.filter_by(name=name).first()
     if existing_category:
         return "Category already exists", 400
-    
+
     category = Category(name=name)
     db.session.add(category)
     db.session.commit()
