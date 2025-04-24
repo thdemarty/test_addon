@@ -16,6 +16,13 @@ app.config.from_object(Config)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+@app.context_processor
+def inject_url_for():
+    """
+    Inject the `url_for` function into the template context. This allows us to 
+    use the `url_for` function in the templates.
+    """
+    return dict(url_for=url_for)
 
 
 @app.route('/healthcare_staff')

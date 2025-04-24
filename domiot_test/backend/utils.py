@@ -18,6 +18,7 @@ def url_for(endpoint, **values):
     """
     with app.app_context():
         ingress_url = request.headers.get('X-Ingress-Path', '')
+        logging.debug(f"URL for endpoint {endpoint}: {ingress_url}{flask_url_for(endpoint, **values)}")
         return ingress_url + flask_url_for(endpoint, **values)
 
 
